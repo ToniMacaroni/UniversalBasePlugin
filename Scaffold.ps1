@@ -57,4 +57,29 @@ Get-ChildItem $NewProjectDir -Recurse | ForEach-Object {
 Remove-Item -Path (Join-Path $NewProjectDir 'Scaffold.ps1')
 Remove-Item -Path (Join-Path $NewProjectDir 'Scaffold.bat')
 
+Remove-Item -Path "$NewProjectDir\.git" -Recurse -Force
+
+$userFile = "$NewProjectDir\$ProjectName\$ProjectName.csproj.user"
+
+if (-not (Test-Path $userFile)) {
+    New-Item -Path $userFile -ItemType File
+    $content = @"
+<Project>
+  <PropertyGroup Condition="'$$(Configuration)' == 'BIE'">
+    <GamePath></GamePath>
+    <GameLibPath>$$(GamePath)\BepInEx\interop</GameLibPath>
+    <PluginDir>$$(GamePath)\BepInEx\plugins</PluginDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$$(Configuration)' == 'ML'">
+    <GamePath></GamePath>
+    <GameLibPath>$$(GamePath)\MelonLoader\Il2CppAssemblies</GameLibPath>
+    <PluginDir>$$(GamePath)\Mods</PluginDir>
+  </PropertyGroup>
+</Project>
+"@
+
+    Set-Content -Path $userFile -Value $content
+}
+
+
 Write-Output "Created project $NewProjectDir"
